@@ -3,7 +3,7 @@ import buttons as bt
 from geopy.geocoders import Photon
 import database as db
 
-bot = telebot.TeleBot(token="6849219345:AAFcDrJ-NC1FxsfoKqat672eAltYQe9RMpc")
+bot = telebot.TeleBot(token="TOKEN")
 geolocator = Photon(user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36")
 
 @bot.message_handler(commands=["start"])
