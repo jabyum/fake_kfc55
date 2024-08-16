@@ -29,8 +29,26 @@ def products_in(all_products):
     kb.row(cart)
     kb.row(back)
     return kb
-
-
+def exact_product_in(plus_or_minus="", current_amount=1):
+    kb = types.InlineKeyboardMarkup(row_width=3)
+    # статичные или постоянные кнопки
+    add_to_cart = types.InlineKeyboardButton(text="Добавить в корзину", callback_data="to_cart")
+    back = types.InlineKeyboardButton(text="Назад", callback_data="back")
+    minus = types.InlineKeyboardButton(text="➖", callback_data="minus")
+    plus = types.InlineKeyboardButton(text="➕", callback_data="plus")
+    count = types.InlineKeyboardButton(text=f"{current_amount}", callback_data="none")
+    # логика изменения кнопок
+    if plus_or_minus == "plus":
+        new_amount = current_amount + 1
+        count = types.InlineKeyboardButton(text=f"{new_amount}", callback_data="none")
+    elif plus_or_minus == "minus":
+        if current_amount > 1:
+            new_amount = current_amount - 1
+            count = types.InlineKeyboardButton(text=f"{new_amount}", callback_data="none")
+    kb.add(minus, count, plus)
+    kb.row(add_to_cart)
+    kb.row(back)
+    return kb
 
 
 

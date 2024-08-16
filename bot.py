@@ -45,6 +45,18 @@ def get_location(message):
         latitude = message.location.latitude
         address = geolocator.reverse((latitude, longitude)).address
         print(address)
+@bot.callback_query_handler(lambda call: call.data in ["back", "main_menu", "cart"])
+def all_calls(call):
+    user_id = call.message.chat.id
+    if call.data == "main_menu":
+        bot.delete_message(user_id, call.message.id)
+        bot.send_message(user_id, "Главное меню", reply_markup=bt.main_menu_bt())
+
+
+
+
+
+
 @bot.message_handler(content_types=["text"])
 def main_menu(message):
     user_id = message.from_user.id
