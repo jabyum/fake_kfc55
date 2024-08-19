@@ -65,7 +65,7 @@ def get_exact_product(pr_id):
     connection = sqlite3.connect("kfc.db")
     sql = connection.cursor()
     exact_product = sql.execute("SELECT pr_name, pr_price, pr_desc, pr_photo "
-                                "FROM product WHERE pr_id=?;", (pr_id, )).fetchone()
+                                "FROM products WHERE pr_id=?;", (pr_id, )).fetchone()
     return exact_product
 # вытаскиваем информацию для кнопок в меню с продуктами
 def get_pr_id_name():
@@ -100,16 +100,27 @@ def add_to_cart(user_id, pr_id, pr_name, pr_count, pr_price):
 
 # функция очистки корзины пользоватлея
 def delete_user_cart(user_id):
-    pass
-# функция удаление определенного продукта из корзины юзера
+    connection = sqlite3.connect("kfc.db")
+    sql = connection.cursor()
+    sql.execute("DELETE FROM cart WHERE user_id=?;", (user_id, ))
+    connection.commit()
 def delete_exact_product_from_cart(user_id, pr_id):
-    pass
-# получение айди и названия продуктов из корзины юзера для кнопок
+    connection = sqlite3.connect("kfc.db")
+    sql = connection.cursor()
+    sql.execute("DELETE FROM cart WHERE user_id=? and pr_id=?;", (user_id, pr_id))
+    connection.commit()
 def get_cart_id_name(user_id):
-    pass
-# получение имени, количества и полной стоимости продуктов из корзины
+    connection = sqlite3.connect("kfc.db")
+    sql = connection.cursor()
+    user_cart = sql.execute("SELECT pr_name, pr_id FROM cart "
+                            "WHERE user_id=?;", (user_id,)).fetchall()
+    return user_cart
 def get_user_cart(user_id):
-    pass
+    connection = sqlite3.connect("kfc.db")
+    sql = connection.cursor()
+    user_cart = sql.execute("SELECT pr_name, pr_count, total_price FROM cart "
+                            "WHERE user_id=?;", (user_id,)).fetchall()
+    return user_cart
 
 
 

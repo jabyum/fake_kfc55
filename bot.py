@@ -8,7 +8,7 @@ import database as db
 
 bot = telebot.TeleBot(token="6849219345:AAFcDrJ-NC1FxsfoKqat672eAltYQe9RMpc")
 geolocator = Photon(user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36")
-
+users = {}
 @bot.message_handler(commands=["start"])
 def start(message):
     user_id = message.from_user.id
@@ -45,7 +45,8 @@ def get_location(message):
         latitude = message.location.latitude
         address = geolocator.reverse((latitude, longitude)).address
         print(address)
-@bot.callback_query_handler(lambda call: call.data in ["back", "main_menu", "cart"])
+@bot.callback_query_handler(lambda call: call.data in ["back", "main_menu", "cart", "plus", "minus",
+                                                       "to_cart"])
 def all_calls(call):
     user_id = call.message.chat.id
     if call.data == "main_menu":
@@ -54,6 +55,42 @@ def all_calls(call):
     elif call.data == "back" or call.data == "main_menu":
         bot.delete_message(user_id, call.message.id)
         bot.send_message(user_id, "Главное меню", reply_markup=bt.main_menu_bt())
+    elif call.data == "plus":
+        current_amount = users[user_id]["pr_count"]
+        users[user_id]["pr_count"] += 1
+        bot.edit_message_reply_markup(chat_id=user_id, message_id=call.message.message_id,
+                                      reply_markup=bt.exact_product_in(current_amount=current_amount,
+                                                                       plus_or_minus="plus"))
+    elif call.data == "minus":
+        current_amount = users[user_id]["pr_count"]
+        if current_amount > 1:
+            users[user_id]["pr_count"] -= 1
+            bot.edit_message_reply_markup(chat_id=user_id, message_id=call.message.message_id,
+                                          reply_markup=bt.exact_product_in(current_amount=current_amount,
+                                                                           plus_or_minus="minus"))
+    elif call.data == "to_cart":
+        db.add_to_cart(user_id=user_id, pr_id=users[user_id]["pr_id"], pr_name=users[user_id]["pr_name"],
+                       pr_count=users[user_id]["pr_count"], pr_price=users[user_id]["pr_price"])
+        users.pop(user_id)
+        bot.delete_message(user_id, call.message.id)
+        all_product = db.get_pr_id_name()
+        bot.send_message(user_id, "Продукт добавлен в корзину. "
+                                  "Желаете заказать что-нибудь еще?", reply_markup=bt.products_in(all_product))
+
+@bot.callback_query_handler(lambda call: "prod_" in call.data)
+def product_call(call):
+    user_id = call.message.chat.id
+    bot.delete_message(user_id, call.message.message_id)
+    product_id = int(call.data.replace("prod_", ""))
+    product_info = db.get_exact_product(product_id)
+    users[user_id] = {"pr_id": product_id, "pr_name": product_info[0],
+                      "pr_count": 1, "pr_price": product_info[1]}
+    text = (f"{product_info[0]}\n\n"
+            f"Описание: {product_info[2]}\n"
+            f"Цена: {product_info[1]} сум")
+    bot.send_photo(user_id, photo=product_info[3], caption=text,
+                   reply_markup=bt.exact_product_in())
+
 
 
 
