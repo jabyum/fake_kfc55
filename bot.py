@@ -107,6 +107,10 @@ def main_menu(message):
         all_product = db.get_pr_id_name()
         bot.send_message(user_id, "Меню", reply_markup=bt.products_in(all_product))
     elif message.text == "🛒Корзина":
+        user_cart = db.get_user_cart(user_id)
+        full_text = f"Ваша корзина: \n\n"
+        total_amount = 0
+
         bot.send_message(user_id, "Ваша корзина:")
     elif message.text == "❗️Отзыв":
         bot.send_message(user_id, "Напишите текст вашего отзыва")
