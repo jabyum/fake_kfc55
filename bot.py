@@ -51,6 +51,12 @@ def all_calls(call):
     if call.data == "main_menu":
         bot.delete_message(user_id, call.message.id)
         bot.send_message(user_id, "Главное меню", reply_markup=bt.main_menu_bt())
+    elif call.data == "back" or call.data == "main_menu":
+        bot.delete_message(user_id, call.message.id)
+        bot.send_message(user_id, "Главное меню", reply_markup=bt.main_menu_bt())
+
+
+
 
 
 
