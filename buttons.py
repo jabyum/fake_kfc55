@@ -50,6 +50,14 @@ def exact_product_in(plus_or_minus="", current_amount=1):
     kb.row(back)
     return kb
 
+def get_cart_kb():
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    clear = types.InlineKeyboardButton(text="Очистить корзину", callback_data="clear_cart")
+    back = types.InlineKeyboardButton(text="Назад", callback_data="main_menu")
+    order = types.InlineKeyboardButton(text="Оформить заказ", callback_data="order")
+    kb.add(clear, order, back)
+    return kb
+
 
 
 

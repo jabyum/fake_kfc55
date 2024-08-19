@@ -9,6 +9,7 @@ import database as db
 bot = telebot.TeleBot(token="6849219345:AAFcDrJ-NC1FxsfoKqat672eAltYQe9RMpc")
 geolocator = Photon(user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36")
 users = {}
+admin_id = -4578355993
 @bot.message_handler(commands=["start"])
 def start(message):
     user_id = message.from_user.id
@@ -46,7 +47,7 @@ def get_location(message):
         address = geolocator.reverse((latitude, longitude)).address
         print(address)
 @bot.callback_query_handler(lambda call: call.data in ["back", "main_menu", "cart", "plus", "minus",
-                                                       "to_cart"])
+                                                       "to_cart", "clear_cart", "order"])
 def all_calls(call):
     user_id = call.message.chat.id
     if call.data == "main_menu":
@@ -76,6 +77,27 @@ def all_calls(call):
         all_product = db.get_pr_id_name()
         bot.send_message(user_id, "Продукт добавлен в корзину. "
                                   "Желаете заказать что-нибудь еще?", reply_markup=bt.products_in(all_product))
+    elif call.data == "clear_cart":
+        db.delete_user_cart(user_id)
+        bot.delete_message(user_id, call.message.id)
+        all_product = db.get_pr_id_name()
+        bot.send_message(user_id, "Корзина очищена. Выберите новые продукты",
+                         reply_markup=bt.products_in(all_product))
+    elif call.data == "order":
+        bot.delete_message(user_id, call.message.id)
+        user_cart = db.get_user_cart(user_id)
+        full_text = f"Новый заказ от пользователя {user_id}: \n\n"
+        total_amount = 0
+        for i in user_cart:
+            full_text += f"{i[0]} x {i[1]} = {i[2]}\n"
+            total_amount += i[2]
+        full_text += f"\n\n Итоговая сумма заказа: {total_amount} сум"
+        bot.send_message(admin_id, full_text)
+        bot.send_message(user_id, "Ваш заказ принят. Ожидайте подтверждения")
+        db.delete_user_cart(user_id)
+
+
+
 
 @bot.callback_query_handler(lambda call: "prod_" in call.data)
 def product_call(call):
@@ -110,8 +132,11 @@ def main_menu(message):
         user_cart = db.get_user_cart(user_id)
         full_text = f"Ваша корзина: \n\n"
         total_amount = 0
-
-        bot.send_message(user_id, "Ваша корзина:")
+        for i in user_cart:
+            full_text += f"{i[0]} x {i[1]} = {i[2]}\n"
+            total_amount += i[2]
+        full_text += f"\n\n Итоговая сумма заказа: {total_amount} сум"
+        bot.send_message(user_id, full_text, reply_markup=bt.get_cart_kb())
     elif message.text == "❗️Отзыв":
         bot.send_message(user_id, "Напишите текст вашего отзыва")
 
